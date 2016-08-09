@@ -1,48 +1,26 @@
-CC = vc +aosppc
-CP = copy
-RM = delete
+HOST	= aos4	# can be overriden when calling make
 
-# Change these as required
-OPTIMIZE = -O3 -speed
-DEBUG =
-CFLAGS = $(OPTIMIZE) $(DEBUG) -I. -Iinclude
-LFLAGS = -P_start -P__amigaos4__ -s
+CC	= vc +aosppc
+CFLAGS	= -O3 -speed -I. -Iinclude
+LDFLAGS	= -P_start -P__amigaos4__ -s -nostdlib
+LIBS	= -lm -lvc
+LHA	= lha
 
-# Flags passed to gcc during linking
-LINK = $(OPTIMIZE) $(DEBUG) $(LFLAGS)
+DISTRIBUTION = ReWarp3DPPC.lha
+OBJS	= warp3dppcinit.o warp3dppc_68k.o
+W3DPPC_LIB = Warp3DPPC.library
 
-# Name of the "thing" to build
-TARGET = Warp3DPPC.library
+$(W3DPPC_LIB): $(OBJS) 
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+	
+%.o: %.c
+	$(CC) -c $(CFLAGS) -o $@ $<
 
-# Additional linker libraries
-LIBS = -lm -lvc
-
-# Version of the library to build
-VERSION = 4
-
-# Source code files used in this project
-# Add any additional files to this line
-
-SRCS = warp3dppcinit.c warp3dppc_68k.c
-
-# -------------------------------------------------------------
-# Nothing should need changing below this line
-
-OBJS = $(SRCS:.c=.o)
-# Rules for building
-../$(TARGET): $(OBJS)
-	$(CC) $(LINK) -nostdlib -o /$(TARGET) $(OBJS) $(LIBS)
-
-warp3dppcinit.o: warp3dppc.library_rev.h
-
-.PHONY: install
-install: ../$(TARGET)
-	$(CP) /$(TARGET) LIBS:
-
-.PHONY: clean
 clean:
-	$(RM) $(OBJS)
+	$(RM) $(OBJS) $(W3DPPC_LIB) $(DISTRIBUTION)
 
-.PHONY: revision
-revision:
-	bumprev $(VERSION) $(TARGET)
+distribution: $(W3DPPC_LIB)
+	$(LHA) a $(DISTRIBUTION) $(W3DPPC_LIB)
+
+include Makefile.inc.$(HOST)
+

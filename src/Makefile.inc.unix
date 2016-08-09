@@ -1,0 +1,6 @@
+ifndef VBCC
+$(error VBCC is undefined)
+endif
+
+RM=rm -f 
+
