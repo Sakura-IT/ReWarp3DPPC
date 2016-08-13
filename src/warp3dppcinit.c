@@ -2,6 +2,7 @@
 #include <exec/exec.h>
 #include <proto/exec.h>
 #include <dos/dos.h>
+#include <proto/dos.h>
 #include <exec/types.h>
 #include <utility/tagitem.h>
 #include <proto/warp3dppc.h>
@@ -9,15 +10,16 @@
 #include <stdarg.h>
 
 struct Library *Warp3DBase;
+struct Library *DOSBase;
 struct Warp3DIFace *IWarp3D;
+struct DOSIFace *IDOS;
+ULONG PatchFlag=0;
 
 #include "LibHeader.h"
 #include "warp3dppc.library_rev.h"
 
 CONST UBYTE
-#ifdef __GNUC__
-__attribute__((used))
-#endif
+
 verstag[] = VERSTAG;
 
 int32 _start(void);
@@ -95,7 +97,35 @@ STATIC struct Library *libInit(struct Library *LibraryBase, APTR seglist, struct
            if (!IWarp3D)
                return NULL;
        } else return NULL;
-
+       DOSBase = IExec->OpenLibrary("dos.library",50L);
+       if (DOSBase)
+       {
+       		IDOS = (struct DOSIFace *)IExec->GetInterface(DOSBase, "main", 1, NULL);
+		if (IDOS)
+			{
+			BPTR lock;
+			lock = IDOS->Lock("ENV:Warp3DPPC/PatchAll", SHARED_LOCK);
+			if (lock)
+				{
+				PatchFlag++;
+				IDOS->UnLock(lock);
+				}
+			lock = IDOS->Lock("ENV:Warp3DPPC/PatchDrawElements", SHARED_LOCK);
+			if (lock)
+				{
+				PatchFlag+=4;
+				IDOS->UnLock(lock);
+				}
+			lock = IDOS->Lock("ENV:Warp3DPPC/PatchDrawArray", SHARED_LOCK);
+			if (lock)
+				{
+				PatchFlag+=2;
+				IDOS->UnLock(lock);
+				}
+			IExec->DropInterface((struct Interface *)IDOS);
+			}
+		IExec->CloseLibrary(DOSBase);
+	}
        return (struct Library *)LibBase;
 }
 
