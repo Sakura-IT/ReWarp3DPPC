@@ -1,11 +1,13 @@
 /*
 **
-**	Thanks to Alain Thellier for providing the patches to DrawElements and DrawArray!
+**	Thanks to Alain Thellier for providing the patches to DrawElements, DrawArray and DrawLine!
 **
 */
 
 #define __USE_BASETYPE__
 #define __USE_INLINE__
+#include <string.h>
+#include <math.h>
 #include <exec/interfaces.h>
 #include <exec/libraries.h>
 #include <exec/emulation.h>
@@ -230,13 +232,68 @@ ULONG stub_UploadTexture(W3D_Context * context, W3D_Texture * texture)
 
 /***************************************************************************************************/
 
-ULONG stub_DrawLine(W3D_Context * context, W3D_Line * line)
+ULONG DrawLine(W3D_Context *context,W3D_Vertex *v1,W3D_Vertex *v2,W3D_Texture *tex,float size)
 {
+W3D_Vertex quad[4];
+W3D_Triangles triangles;
+register ULONG result;
+float dim,x,y;
+ULONG currentstate;
+
+	if(size<1.0) size=1.0;
+	currentstate=W3D_GetState(context,W3D_CULLFACE);
+	W3D_SetState(context,W3D_CULLFACE,W3D_DISABLE);		/* a line is never an hidden-face */
+	triangles.v 		=quad;
+	triangles.tex		=tex;
+	triangles.vertexcount	=4;
+	memcpy(&quad[0],v1,sizeof(W3D_Vertex));
+	memcpy(&quad[1],v2,sizeof(W3D_Vertex));
+	memcpy(&quad[2],v2,sizeof(W3D_Vertex));
+	memcpy(&quad[3],v1,sizeof(W3D_Vertex));
+	x=(v2->x - v1->x);
+	y=(v2->y - v1->y);
+	dim=sqrt( x*x + y*y );
+
+	if(dim!=0.0)
+	{
+	size=size/(dim*2.0);
+	x=size*x;
+	y=size*y;
+	quad[0].x += y; 	quad[0].y -= x;
+ 	quad[1].x += y; 	quad[1].y -= x;
+	quad[2].x -= y;	quad[2].y += x;
+	quad[3].x -= y;	quad[3].y += x;
+	}
+	else
+	{
+	quad[0].x += 0.0; 	quad[0].y += 0.0;
+ 	quad[1].x += size; 	quad[1].y += 0.0;
+ 	quad[2].x += size; 	quad[2].y += size;
+ 	quad[3].x += 0.0; 	quad[3].y += size;
+	}
+
+	result=W3D_DrawTriFan(context,&triangles);
+	W3D_SetState(context,W3D_CULLFACE,currentstate);
+	return(result);
+}
+
+/***************************************************************************************************/
+
+ULONG stub_DrawLine(W3D_Context *context, W3D_Line *line)
+{
+if (PatchFlag&9)
+	{
+	register ULONG result;
+	result=DrawLine(context,&line->v1,&line->v2,line->tex,line->linewidth);
+	return(result);
+	}
+else
+	{
 	ULONG result;
 	result = W3D_DrawLine(context, line);
 	return (result);
+	}
 }
-
 /***************************************************************************************************/
 
 ULONG stub_DrawPoint(W3D_Context * context, W3D_Point * point)

@@ -122,6 +122,12 @@ STATIC struct Library *libInit(struct Library *LibraryBase, APTR seglist, struct
 				PatchFlag+=2;
 				IDOS->UnLock(lock);
 				}
+			lock = IDOS->Lock("ENV:Warp3DPPC/PatchDrawLine", SHARED_LOCK);
+			if (lock)
+				{
+				PatchFlag+=8;
+				IDOS->UnLock(lock);
+				}
 			IExec->DropInterface((struct Interface *)IDOS);
 			}
 		IExec->CloseLibrary(DOSBase);
