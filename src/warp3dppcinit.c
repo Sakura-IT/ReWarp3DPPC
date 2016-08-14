@@ -18,9 +18,7 @@ ULONG PatchFlag=0;
 #include "LibHeader.h"
 #include "warp3dppc.library_rev.h"
 
-CONST UBYTE
-
-verstag[] = VERSTAG;
+CONST UBYTE verstag[] = VERSTAG;
 
 int32 _start(void);
 
