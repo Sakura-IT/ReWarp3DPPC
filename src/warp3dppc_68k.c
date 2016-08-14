@@ -16,6 +16,8 @@
 #include <proto/warp3d.h>
 #include <interfaces/warp3d.h>
 
+#include "warp3dppc_patch.h"
+
 /***************************************************************************************************/
 
 #define NLOOP(nbre) for(n=0;n<nbre;n++)
@@ -281,17 +283,14 @@ ULONG currentstate;
 
 ULONG stub_DrawLine(W3D_Context *context, W3D_Line *line)
 {
-if (PatchFlag&9)
-	{
-	register ULONG result;
-	result=DrawLine(context,&line->v1,&line->v2,line->tex,line->linewidth);
-	return(result);
-	}
-else
-	{
-	ULONG result;
-	result = W3D_DrawLine(context, line);
-	return (result);
+	if (PatchFlag & PATCH_DRAWLINE) {
+		register ULONG result;
+		result=DrawLine(context,&line->v1,&line->v2,line->tex,line->linewidth);
+		return(result);
+	} else {
+		ULONG result;
+		result = W3D_DrawLine(context, line);
+		return (result);
 	}
 }
 /***************************************************************************************************/
@@ -1099,23 +1098,21 @@ ULONG nb=C->count;
 
 ULONG stub_DrawArray(W3D_Context* context, ULONG primitive, ULONG base, ULONG count)
 {
-struct drawcontext C;
+	struct drawcontext C;
 	C.context	=	context;
 	C.primitive	=	primitive;
 	C.type		=	W3D_INDEX_NONE;
 	C.count		=	count;
 	C.indices	=	NULL;
 	C.base		=	base;
-if (PatchFlag&3)
-	{
-	DrawPrimitive(&C);
-	return(W3D_SUCCESS);
-	}
-else
-	{
-	ULONG result;
-	result = W3D_DrawArray(context, primitive, base, count);
-	return (result);
+
+	if (PatchFlag & PATCH_DRAWARRAY) {
+		DrawPrimitive(&C);
+		return(W3D_SUCCESS);
+	} else {
+		ULONG result;
+		result = W3D_DrawArray(context, primitive, base, count);
+		return (result);
 	}
 }
 
@@ -1123,7 +1120,8 @@ else
 
 ULONG stub_DrawElements(W3D_Context* context, ULONG primitive, ULONG type, ULONG count,void *indices)
 {
-struct drawcontext C;
+
+	struct drawcontext C;
 
 	C.context	=context;
 	C.primitive	=primitive;
@@ -1131,16 +1129,14 @@ struct drawcontext C;
 	C.count	=count;
 	C.indices	=indices;
 	C.base	=0;
-if (PatchFlag&5)
-	{
-	DrawPrimitive(&C);
-	return(W3D_SUCCESS);
-	}
-else
-	{
-	ULONG result;	
-	result = W3D_DrawElements(context, primitive, type, count, indices);
-	return (result);
+
+	if (PatchFlag & PATCH_DRAWELEMENTS) {
+		DrawPrimitive(&C);
+		return(W3D_SUCCESS);
+	} else {
+		ULONG result;	
+		result = W3D_DrawElements(context, primitive, type, count, indices);
+		return (result);
 	}
 }
 

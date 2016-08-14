@@ -13,10 +13,12 @@ struct Library *Warp3DBase;
 struct Library *DOSBase;
 struct Warp3DIFace *IWarp3D;
 struct DOSIFace *IDOS;
-ULONG PatchFlag=0;
+
+ULONG PatchFlag = 0;	/* which patches should be enabled */
 
 #include "LibHeader.h"
 #include "warp3dppc.library_rev.h"
+#include "warp3dppc_patch.h"
 
 CONST UBYTE verstag[] = VERSTAG;
 
@@ -105,25 +107,25 @@ STATIC struct Library *libInit(struct Library *LibraryBase, APTR seglist, struct
 			lock = IDOS->Lock("ENV:Warp3DPPC/PatchAll", SHARED_LOCK);
 			if (lock)
 				{
-				PatchFlag++;
+				PatchFlag|=PATCH_ALL;
 				IDOS->UnLock(lock);
 				}
 			lock = IDOS->Lock("ENV:Warp3DPPC/PatchDrawElements", SHARED_LOCK);
 			if (lock)
 				{
-				PatchFlag+=4;
+				PatchFlag|=PATCH_DRAWELEMENTS;
 				IDOS->UnLock(lock);
 				}
 			lock = IDOS->Lock("ENV:Warp3DPPC/PatchDrawArray", SHARED_LOCK);
 			if (lock)
 				{
-				PatchFlag+=2;
+				PatchFlag|=PATCH_DRAWARRAY;
 				IDOS->UnLock(lock);
 				}
 			lock = IDOS->Lock("ENV:Warp3DPPC/PatchDrawLine", SHARED_LOCK);
 			if (lock)
 				{
-				PatchFlag+=8;
+				PatchFlag|=PATCH_DRAWLINE;
 				IDOS->UnLock(lock);
 				}
 			IExec->DropInterface((struct Interface *)IDOS);
