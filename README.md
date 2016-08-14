@@ -17,6 +17,7 @@ ReWarp3DPPC supports the following arguments (in the form of a file) in ENVARC:W
 
 - PatchDrawElements:    Use Alain Thellier's patch for W3D_DrawElements
 - PatchDrawArray:       Use Alain Thellier's patch for W3D_DrawArray
+- PatchDrawLine:        Use Alain Thellier's patch for W3D_DrawLine (Needed for FreeSpace)
 - PatchAll:             Use all of the above
 
 Recommended is PatchAll. This has been tested on a Sam440 with a Radeon 9200 on AmigaOS 4.1FE.
