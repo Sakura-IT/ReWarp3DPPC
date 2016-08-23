@@ -24,9 +24,10 @@
 #define AND &
 #define COPYRGBA(x,y)	*((ULONG *)(x))=*((ULONG *)(y));
 #define W3D_INDEX_NONE 9999
+
 extern ULONG PatchFlag;
 
-struct drawcontext{
+struct drawcontext {
 	W3D_Context *context;
 	ULONG primitive;
 	ULONG type;
@@ -35,23 +36,23 @@ struct drawcontext{
 	ULONG base;
 };
 
-struct point3D{
+struct point3D {
 	float x,y,z;
 	float u,v;
 	float w;
 	UBYTE RGBA[4];
 };
 
-struct VertexFFF{
+struct VertexFFF {
 	float x,y,z;
 };
 
-struct VertexFFD{
+struct VertexFFD {
 	float x,y;
 	double z;
 };
 
-struct VertexDDD{
+struct VertexDDD {
 	double x,y,z;
 };
 
@@ -236,46 +237,56 @@ ULONG stub_UploadTexture(W3D_Context * context, W3D_Texture * texture)
 
 ULONG DrawLine(W3D_Context *context,W3D_Vertex *v1,W3D_Vertex *v2,W3D_Texture *tex,float size)
 {
-W3D_Vertex quad[4];
-W3D_Triangles triangles;
-register ULONG result;
-float dim,x,y;
-ULONG currentstate;
+	W3D_Vertex quad[4];
+	W3D_Triangles triangles;
+	register ULONG result;
+	float dim,x,y;
+	ULONG currentstate;
 
-	if(size<1.0) size=1.0;
-	currentstate=W3D_GetState(context,W3D_CULLFACE);
-	W3D_SetState(context,W3D_CULLFACE,W3D_DISABLE);		/* a line is never an hidden-face */
-	triangles.v 		=quad;
-	triangles.tex		=tex;
-	triangles.vertexcount	=4;
-	memcpy(&quad[0],v1,sizeof(W3D_Vertex));
-	memcpy(&quad[1],v2,sizeof(W3D_Vertex));
-	memcpy(&quad[2],v2,sizeof(W3D_Vertex));
-	memcpy(&quad[3],v1,sizeof(W3D_Vertex));
-	x=(v2->x - v1->x);
-	y=(v2->y - v1->y);
-	dim=sqrt( x*x + y*y );
+	if (size < 1.0)
+		size = 1.0;
 
-	if(dim!=0.0)
-	{
-	size=size/(dim*2.0);
-	x=size*x;
-	y=size*y;
-	quad[0].x += y; 	quad[0].y -= x;
- 	quad[1].x += y; 	quad[1].y -= x;
-	quad[2].x -= y;	quad[2].y += x;
-	quad[3].x -= y;	quad[3].y += x;
+	currentstate = W3D_GetState(context, W3D_CULLFACE);
+	W3D_SetState(context, W3D_CULLFACE, W3D_DISABLE);		/* a line is never an hidden-face */
+
+	triangles.v = quad;
+	triangles.tex = tex;
+	triangles.vertexcount = 4;
+
+	memcpy(&quad[0], v1, sizeof(W3D_Vertex));
+	memcpy(&quad[1], v2, sizeof(W3D_Vertex));
+	memcpy(&quad[2], v2, sizeof(W3D_Vertex));
+	memcpy(&quad[3], v1, sizeof(W3D_Vertex));
+
+	x = (v2->x - v1->x);
+	y = (v2->y - v1->y);
+	dim = sqrt(x*x + y*y);
+
+	if(dim != 0.0) {
+		size = size/(dim*2.0);
+		x = size*x;
+		y = size*y;
+		quad[0].x += y;
+		quad[0].y -= x;
+	 	quad[1].x += y; 
+		quad[1].y -= x;
+		quad[2].x -= y;
+		quad[2].y += x;
+		quad[3].x -= y;
+		quad[3].y += x;
+	} else {
+		quad[0].x += 0.0; 
+		quad[0].y += 0.0;
+ 		quad[1].x += size; 
+		quad[1].y += 0.0;
+	 	quad[2].x += size; 
+		quad[2].y += size;
+	 	quad[3].x += 0.0; 
+		quad[3].y += size;
 	}
-	else
-	{
-	quad[0].x += 0.0; 	quad[0].y += 0.0;
- 	quad[1].x += size; 	quad[1].y += 0.0;
- 	quad[2].x += size; 	quad[2].y += size;
- 	quad[3].x += 0.0; 	quad[3].y += size;
-	}
 
-	result=W3D_DrawTriFan(context,&triangles);
-	W3D_SetState(context,W3D_CULLFACE,currentstate);
+	result = W3D_DrawTriFan(context, &triangles);
+	W3D_SetState(context, W3D_CULLFACE, currentstate);
 	return(result);
 }
 
@@ -285,7 +296,7 @@ ULONG stub_DrawLine(W3D_Context *context, W3D_Line *line)
 {
 	if (PatchFlag & PATCH_DRAWLINE) {
 		register ULONG result;
-		result=DrawLine(context,&line->v1,&line->v2,line->tex,line->linewidth);
+		result = DrawLine(context, &line->v1, &line->v2, line->tex, line->linewidth);
 		return(result);
 	} else {
 		ULONG result;
@@ -832,57 +843,70 @@ ULONG stub_BindTexture(W3D_Context * context, ULONG tmu, W3D_Texture * texture)
 
 void ColorToRGBA(UBYTE *RGBA,float r,float g,float b,float a)
 {
-	RGBA[0]=(UBYTE)(r*256.0);
-	if(1.0<=r)	RGBA[0]=255;
-	if(r<=0.0)	RGBA[0]=0;
-	RGBA[1]=(UBYTE)(g*256.0);
-	if(1.0<=g)	RGBA[1]=255;
-	if(g<=0.0)	RGBA[1]=0;
-	RGBA[2]=(UBYTE)(b*256.0);
-	if(1.0<=b)	RGBA[2]=255;
-	if(b<=0.0)	RGBA[2]=0;
-	RGBA[3]=(UBYTE)(a*256.0);
-	if(1.0<=a)	RGBA[3]=255;
-	if(a<=0.0)	RGBA[3]=0;
+	RGBA[0] = (UBYTE)(r*256.0);
+
+	if(1.0 <= r)
+		RGBA[0] =2 55;
+	if(r <= 0.0)
+		RGBA[0] = 0;
+
+	RGBA[1] = (UBYTE)(g*256.0);
+
+	if(1.0 <= g)
+		RGBA[1]=255;
+	if(g <= 0.0)
+		RGBA[1]=0;
+
+	RGBA[2] = (UBYTE)(b*256.0);
+
+	if(1.0 <= b)
+		RGBA[2]=255;
+	if(b <= 0.0)
+		RGBA[2]=0;
+
+	RGBA[3] = (UBYTE)(a*256.0);
+
+	if(1.0 <= a)
+		RGBA[3]=255;
+	if(a <= 0.0)
+		RGBA[3]=0;
 }
 
 /***************************************************************************************************/
 
 void GetPoint(W3D_Context *context,struct point3D *P,ULONG i)
 {
-UBYTE *V		=context->VertexPointer;
-ULONG  Vformat	=context->VPMode;
-ULONG  Vstride	=context->VPStride;
+	UBYTE *V = context->VertexPointer;
+	ULONG Vformat = context->VPMode;
+	ULONG Vstride = context->VPStride;
 
-WORD   unit		=0;	/* default use tex0 TODO: manage multi texturing */
-W3D_Texture *texture=context->CurrentTex[unit];
-UBYTE *UV		=context->TexCoordPointer[unit];
-ULONG  UVformat	=context->TPFlags[unit];
-ULONG  UVstride	=context->TPStride[unit];
-ULONG  UVoffsetv	=context->TPVOffs[unit];
-ULONG  UVoffsetw	=context->TPWOffs[unit];
+	WORD unit = 0;	/* default use tex0 TODO: manage multi texturing */
+	W3D_Texture *texture = context->CurrentTex[unit];
+	UBYTE *UV = context->TexCoordPointer[unit];
+	ULONG UVformat = context->TPFlags[unit];
+	ULONG UVstride = context->TPStride[unit];
+	ULONG UVoffsetv	= context->TPVOffs[unit];
+	ULONG UVoffsetw	= context->TPWOffs[unit];
 
-UBYTE *C		=context->ColorPointer;
-ULONG  Cformat	=context->CPMode;
-ULONG  Cstride	=context->CPStride;
+	UBYTE *C = context->ColorPointer;
+	ULONG Cformat = context->CPMode;
+	ULONG Cstride = context->CPStride;
 
-UBYTE *pt;
-struct VertexFFF *fff;
-struct VertexFFD *ffd;
-struct VertexDDD *ddd;
-float *u;
-float *v;
-float *w;
-float *rgbaF;
-UBYTE *rgbaB;
-UBYTE  RGBA[4];
-
+	UBYTE *pt;
+	struct VertexFFF *fff;
+	struct VertexFFD *ffd;
+	struct VertexDDD *ddd;
+	float *u;
+	float *v;
+	float *w;
+	float *rgbaF;
+	UBYTE *rgbaB;
+	UBYTE  RGBA[4];
 
 	P->x=P->y=P->z=P->u=P->v=0.0;
 	P->RGBA[0]=P->RGBA[1]=P->RGBA[2]=P->RGBA[3]=255; 	/* default: use white. TODO: use CurrentColor */
 
-
-/* recover XYZ values */
+	/* recover XYZ values */
 	if(V!=NULL)
 	{
 	pt=&(V[i*Vstride]);
@@ -1123,12 +1147,12 @@ ULONG stub_DrawElements(W3D_Context* context, ULONG primitive, ULONG type, ULONG
 
 	struct drawcontext C;
 
-	C.context	=context;
-	C.primitive	=primitive;
-	C.type	=type;
-	C.count	=count;
-	C.indices	=indices;
-	C.base	=0;
+	C.context = context;
+	C.primitive = primitive;
+	C.type = type;
+	C.count	= count;
+	C.indices = indices;
+	C.base = 0;
 
 	if (PatchFlag & PATCH_DRAWELEMENTS) {
 		DrawPrimitive(&C);
