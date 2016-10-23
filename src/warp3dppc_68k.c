@@ -846,7 +846,7 @@ void ColorToRGBA(UBYTE *RGBA,float r,float g,float b,float a)
 	RGBA[0] = (UBYTE)(r*256.0);
 
 	if(1.0 <= r)
-		RGBA[0] =2 55;
+		RGBA[0] =255;
 	if(r <= 0.0)
 		RGBA[0] = 0;
 
