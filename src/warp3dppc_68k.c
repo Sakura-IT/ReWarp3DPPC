@@ -909,56 +909,56 @@ void GetPoint(W3D_Context *context,struct point3D *P,ULONG i)
 	/* recover XYZ values */
 	if(V!=NULL)
 	{
-	pt=&(V[i*Vstride]);
+		pt=&(V[i*Vstride]);
 
-	if(Vformat==W3D_VERTEX_F_F_F)
-	{
-	fff=(struct VertexFFF *)pt;
-	P->x=fff->x;
-	P->y=fff->y;
-	P->z=fff->z;
-	}
+		if(Vformat==W3D_VERTEX_F_F_F)
+		{
+			fff=(struct VertexFFF *)pt;
+			P->x=fff->x;
+			P->y=fff->y;
+			P->z=fff->z;
+		}
 
-	if(Vformat==W3D_VERTEX_F_F_D)
-	{
-	ffd=(struct VertexFFD *)pt;
-	P->x=ffd->x;
-	P->y=ffd->y;
-	P->z=(float)ffd->z;
-	}
+		if(Vformat==W3D_VERTEX_F_F_D)
+		{
+			ffd=(struct VertexFFD *)pt;
+			P->x=ffd->x;
+			P->y=ffd->y;
+			P->z=(float)ffd->z;
+		}
 
-	if(Vformat==W3D_VERTEX_D_D_D)
-	{
-	ddd=(struct VertexDDD *)pt;
-	P->x=(float)ddd->x;
-	P->y=(float)ddd->y;
-	P->z=(float)ddd->z;
-	}
+		if(Vformat==W3D_VERTEX_D_D_D)
+		{
+			ddd=(struct VertexDDD *)pt;
+			P->x=(float)ddd->x;
+			P->y=(float)ddd->y;
+			P->z=(float)ddd->z;
+		}
 
-	P->w=1.0/P->z;
+		P->w=1.0/P->z;
 	}
 
 
 /* recover UV values */
-	if(V!=NULL)
+	if(UV!=NULL)
 	{
-	pt=&(UV[i*UVstride]);
-	u=(float *)pt;
-	v=(float *)&pt[UVoffsetv];
-	w=(float *)&pt[UVoffsetw];
+		pt=&(UV[i*UVstride]);
+		u=(float *)pt;
+		v=(float *)&pt[UVoffsetv];
+		w=(float *)&pt[UVoffsetw];
 
-	if(UVformat==W3D_TEXCOORD_NORMALIZED)
-	{
-	P->u=u[0] ;
-	P->v=v[0] ;
-	P->w=w[0] ;
-	}
-	else
-	{
-	P->u=u[0] /texture->texwidth;
-	P->v=v[0] /texture->texheight;
-	P->w=w[0] ;
-	}
+		if(UVformat==W3D_TEXCOORD_NORMALIZED)
+		{
+			P->u=u[0] ;
+		P->v=v[0] ;
+		P->w=w[0] ;
+		}
+		else
+		{
+			P->u=u[0] /texture->texwidth;
+			P->v=v[0] /texture->texheight;
+			P->w=w[0] ;
+		}
 	}
 
 /* recover Color RGBA values */
@@ -986,7 +986,6 @@ void GetPoint(W3D_Context *context,struct point3D *P,ULONG i)
 	if(Cformat AND W3D_CMODE_BGRA)
 		{P->RGBA[0]=RGBA[2]; P->RGBA[1]=RGBA[1]; P->RGBA[2]=RGBA[0]; P->RGBA[3]=RGBA[3];	}
 	}
-
 }
 
 /***************************************************************************************************/
@@ -1123,11 +1122,11 @@ ULONG nb=C->count;
 ULONG stub_DrawArray(W3D_Context* context, ULONG primitive, ULONG base, ULONG count)
 {
 	struct drawcontext C;
-	C.context	=	context;
-	C.primitive	=	primitive;
+	C.context		=	context;
+	C.primitive		=	primitive;
 	C.type		=	W3D_INDEX_NONE;
 	C.count		=	count;
-	C.indices	=	NULL;
+	C.indices		=	NULL;
 	C.base		=	base;
 
 	if (PatchFlag & PATCH_DRAWARRAY) {
@@ -1147,12 +1146,12 @@ ULONG stub_DrawElements(W3D_Context* context, ULONG primitive, ULONG type, ULONG
 
 	struct drawcontext C;
 
-	C.context = context;
-	C.primitive = primitive;
-	C.type = type;
+	C.context	= context;
+	C.primitive	= primitive;
+	C.type 	= type;
 	C.count	= count;
-	C.indices = indices;
-	C.base = 0;
+	C.indices	= indices;
+	C.base 	= 0;
 
 	if (PatchFlag & PATCH_DRAWELEMENTS) {
 		DrawPrimitive(&C);
