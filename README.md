@@ -9,7 +9,7 @@ https://github.com/Sakura-IT/ReWarp
 
 # Builds
 
-Automated binary builds are available from Jenkins: https://sonnet.uguu.waw.pl/jenkins/job/ReWarp3DPPC
+Automated binary builds are available from Jenkins: https://jenkins.sakura-it.pl/job/ReWarp3DPPC
 
 # Options
 
