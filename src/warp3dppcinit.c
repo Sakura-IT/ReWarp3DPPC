@@ -7,12 +7,21 @@
 #include <utility/tagitem.h>
 #include <proto/warp3dppc.h>
 #include <proto/warp3d.h>
+#include <proto/graphics.h>
 #include <stdarg.h>
 
 struct Library *Warp3DBase;
 struct Library *DOSBase;
+struct Library *NewlibBase;
+struct Library *GraphicsBase;
 struct Warp3DIFace *IWarp3D;
 struct DOSIFace *IDOS;
+struct Interface *INewlib;
+struct GraphicsIFace *IGraphics;
+
+#if defined(DEBUG) || defined(PATCH_RADEONHD)
+struct ExecIFace *iexec = 0;
+#endif
 
 ULONG PatchFlag = 0;	/* which patches should be enabled */
 
@@ -60,6 +69,15 @@ STATIC APTR libExpunge(struct LibraryManagerInterface *Self)
     {
 	     result = (APTR)LibBase->segList;
 
+        IExec->DropInterface(INewlib);
+        IExec->CloseLibrary(NewlibBase);
+
+        IExec->DropInterface((struct Interface *)IGraphics);
+        IExec->CloseLibrary(GraphicsBase);
+
+        IExec->DropInterface((struct Interface *)IDOS);
+        IExec->CloseLibrary(DOSBase);
+
         IExec->DropInterface((struct Interface *)IWarp3D);
         IExec->CloseLibrary(Warp3DBase);
 
@@ -80,6 +98,10 @@ STATIC struct Library *libInit(struct Library *LibraryBase, APTR seglist, struct
 
     IExec = (struct ExecIFace *)ISys;
 
+#if defined(DEBUG) || defined(DPATCH_RADEONHD)
+	iexec = IExec;
+#endif
+
     LibBase->libNode.lib_Node.ln_Type = NT_LIBRARY;
     LibBase->libNode.lib_Node.ln_Pri  = 0;
     LibBase->libNode.lib_Node.ln_Name = "Warp3DPPC.library";
@@ -90,6 +112,15 @@ STATIC struct Library *libInit(struct Library *LibraryBase, APTR seglist, struct
 
     LibBase->segList = (BPTR)seglist;
 
+
+       NewlibBase = IExec->OpenLibrary("newlib.library", 0L);
+       if (NewlibBase)
+       {
+           INewlib = IExec->GetInterface(NewlibBase, "main", 1, NULL);
+           if (!INewlib)
+               return NULL;
+       } else return NULL;
+       
        Warp3DBase = IExec->OpenLibrary("Warp3D.library", 50L);
        if (Warp3DBase)
        {
@@ -97,6 +128,15 @@ STATIC struct Library *libInit(struct Library *LibraryBase, APTR seglist, struct
            if (!IWarp3D)
                return NULL;
        } else return NULL;
+
+       GraphicsBase = IExec->OpenLibrary("graphics.library", 50L);
+       if (GraphicsBase)
+       {
+           IGraphics = (struct GraphicsIFace *)IExec->GetInterface(GraphicsBase, "main", 1, NULL);
+           if (!IGraphics)
+               return NULL;
+       } else return NULL;
+
        DOSBase = IExec->OpenLibrary("dos.library",50L);
        if (DOSBase)
        {
